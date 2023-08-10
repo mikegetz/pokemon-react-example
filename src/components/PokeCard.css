@@ -1,0 +1,14 @@
+.root {
+  display: "flex";
+  flex-direction: "column";
+  justify-content: "space-between";
+  min-width: 335;
+  min-height: 630;
+}
+.title {
+  font-size: 14;
+}
+
+.pos {
+  margin-bottom: 12;
+}
