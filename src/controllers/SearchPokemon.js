@@ -26,17 +26,35 @@ const searchPokemon = async (searchValue, pokemon) => {
   return { pokeState, pokemonStatus };
 };
 
+const VERSIONS = ["red" , "blue" , "yellow" , "gold"];
+
 const loadDescription = async (url) => {
   const speciesResult = await genericPokemonAPIRequest(url);
   let descriptions = speciesResult.data.flavor_text_entries;
   descriptions = descriptions.filter((description) => description.language.name === "en");
+  descriptions = descriptions.filter((description) => VERSIONS.includes(description.version.name));
   descriptions = descriptions.slice(0, 5);
-  descriptions = descriptions.map((description) => description.flavor_text);
-  descriptions = descriptions.filter((description, index) => descriptions.indexOf(description) === index);
-  descriptions = descriptions.map((description) => description.replace(/[^a-z0-9]/gim, " ").trim());
-  const description = descriptions.join(". ").concat(".");
+
+  let parsedDescriptions = descriptions.map((description) => description.flavor_text);
+  parsedDescriptions = dedup(parsedDescriptions);
+  const description = cleanDescriptionsIntoDescription(parsedDescriptions);
   return description;
 };
+
+
+const dedup = (inputArray) => {
+  return inputArray.filter((description, index) => inputArray.indexOf(description) === index);
+};
+
+const cleanDescriptionsIntoDescription = (descriptions) => {
+  let parsedDescriptions = descriptions.map((description) => description.replace(/POK.MON/g, "Pokemon"));
+  // eslint-disable-next-line no-control-regex
+  parsedDescriptions = parsedDescriptions.map((description) => description.replace(/\u000c/u, " "));
+  parsedDescriptions = parsedDescriptions.map((description) => description.replace(/\n/g, " "));
+  parsedDescriptions = parsedDescriptions.map((description) => description.trim());
+  const description = parsedDescriptions.join(" ");
+  return description;
+}
 
 const useDescription = (descriptionURL) => {
   return useQuery(["descriptionURL", descriptionURL], () => loadDescription(descriptionURL));
